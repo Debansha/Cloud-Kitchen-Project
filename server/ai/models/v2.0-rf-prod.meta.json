@@ -1,0 +1,45 @@
+{
+  "model_version": "v2.0-rf-prod",
+  "algorithm": "GradientBoostingRegressor",
+  "status": "production",
+  "decision_note": "Production release model validated against historical orders (MAE=73.70s, R2=0.9848).",
+  "trained_at": "2026-10-27T23:09:22.602470",
+  "train_samples": 1440,
+  "val_samples": 360,
+  "val_mae": 73.704,
+  "val_rmse": 132.944,
+  "val_r2": 0.9848,
+  "hyperparameters": {
+    "n_estimators": 120,
+    "learning_rate": 0.08,
+    "max_depth": 5,
+    "random_state": 42
+  },
+  "features_used": [
+    "base_prep_time_minutes",
+    "quantity",
+    "item_complexity_score",
+    "hour_of_day",
+    "is_peak_hour",
+    "active_staff_count",
+    "station_staff_ratio",
+    "queue_length",
+    "station_load",
+    "kitchen_id",
+    "category",
+    "station_type"
+  ],
+  "top_feature_importances": {
+    "quantity": 0.2817,
+    "base_prep_time_minutes": 0.2457,
+    "item_complexity_score": 0.1549,
+    "category_Pizza": 0.0908,
+    "station_type_Oven": 0.0671,
+    "queue_length": 0.045,
+    "active_staff_count": 0.0337,
+    "station_load": 0.032,
+    "station_staff_ratio": 0.0202,
+    "is_peak_hour": 0.0138
+  },
+  "model_path": "C:\\Users\\deban\\OneDrive\\Documents\\CODING\\WEB DEV\\PROJECTS\\Cloud Kitchen\\server\\ai\\models\\v2.0-rf-prod.joblib"
+}

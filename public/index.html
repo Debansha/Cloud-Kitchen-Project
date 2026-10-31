@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Driven Cloud Kitchen Order Scheduling & Management System">
+    <title>Cloud Kitchen Scheduler & Operations Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Main Navigation Header -->
+    <header class="app-header">
+        <div class="brand">
+            <span class="brand-icon">☁️</span>
+            <div>
+                <h1>Cloud Kitchen</h1>
+                <span class="sub-brand">Adaptive AI Order Scheduling & Multi-Kitchen Orchestration</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="ai-model-badge" id="model-badge" title="Active production AI model">
+                🧠 <span id="model-badge-label">v2.0-rf-prod</span>
+            </div>
+            <div class="time-badge">
+                <span class="clock-icon">🕒</span>
+                <span id="live-clock">00:00:00</span>
+            </div>
+            <div class="connection-status">
+                <span id="conn-dot" class="dot offline pulse"></span>
+                <span id="conn-text">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <!-- SECTION 1: KPIs + Model Info -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2>📊 Kitchen Control Center &amp; Live KPIs</h2>
+                <span class="section-desc">Real-time overview of orders, revenue, and AI performance metrics</span>
+            </div>
+            <div class="stat-cards-row">
+                <div class="glass-card stat-card slide-up" style="animation-delay: 0.1s;">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-content">
+                        <div class="label">Total Orders Today</div>
+                        <div class="value" id="stat-total-orders">48</div>
+                    </div>
+                </div>
+                <div class="glass-card stat-card slide-up" style="animation-delay: 0.2s;">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-content">
+                        <div class="label">Avg Wait Time</div>
+                        <div class="value" id="stat-wait-time">3.8 min</div>
+                    </div>
+                </div>
+                <div class="glass-card stat-card slide-up" style="animation-delay: 0.3s;">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-content">
+                        <div class="label">Avg Turnaround Time</div>
+                        <div class="value" id="stat-turnaround">14.2 min</div>
+                    </div>
+                </div>
+                <div class="glass-card stat-card slide-up" style="animation-delay: 0.4s;">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <div class="label">Daily Revenue</div>
+                        <div class="value" id="stat-revenue">₹16,450</div>
+                    </div>
+                </div>
+                <div class="glass-card stat-card slide-up model-card" style="animation-delay: 0.5s;">
+                    <div class="stat-icon">🧠</div>
+                    <div class="stat-content">
+                        <div class="label">AI Model (MAE)</div>
+                        <div class="value" id="stat-model-mae">73.7 s</div>
+                        <div class="label" style="font-size:0.65rem; margin-top:2px;" id="stat-model-version">v2.0-rf-prod | R²: 0.9848</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Multi-Cloud-Kitchen Status -->
+        <section class="glass-card kitchen-status-section slide-up" style="animation-delay: 0.55s;">
+            <div class="card-header flex-between">
+                <div>
+                    <h3>🏭 Multi-Cloud-Kitchen Network Status</h3>
+                    <span class="card-subtitle">Live workload, staffing &amp; capacity across all cloud kitchen nodes</span>
+                </div>
+                <button class="btn-secondary btn-sm" id="btn-refresh-kitchens">↻ Refresh</button>
+            </div>
+            <div id="kitchen-status-grid" class="kitchen-status-grid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- SECTION 3 & 4: Order POS & Active Orders Queue -->
+        <div class="two-column-grid">
+            
+            <!-- Column 1: Order Placement POS -->
+            <section class="glass-card pos-card slide-up" style="animation-delay: 0.6s;">
+                <div class="card-header">
+                    <h3>🛒 Place New Kitchen Order</h3>
+                    <span class="card-subtitle">AI auto-selects optimal kitchen &amp; calculates priority. No manual override.</span>
+                </div>
+                <form id="order-form" class="pos-form">
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label for="customer-name">Customer / Table Name</label>
+                            <input type="text" id="customer-name" placeholder="e.g. Ananya Roy" required>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label for="delivery-window">Delivery Window</label>
+                            <select id="delivery-window" class="priority-select">
+                                <option value="20">⚡ Express (20 min)</option>
+                                <option value="35" selected>🏃 Standard (35 min)</option>
+                                <option value="60">📅 Scheduled (60 min)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Auto-Priority Info Panel (shown after order submission) -->
+                    <div id="priority-result-panel" class="priority-result-panel" style="display:none;"></div>
+
+                    <div class="form-group">
+                        <label>Select Menu Items</label>
+                        <div class="menu-items-grid" id="menu-items-container">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="order-submit-btn">
+                        <span>⚡ Dispatch Order to AI Scheduler</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Column 2: Active Orders Queue -->
+            <section class="glass-card active-orders-card slide-up" style="animation-delay: 0.7s;">
+                <div class="card-header">
+                    <h3>📋 Live Active Orders Queue</h3>
+                    <span class="card-subtitle">Real-time LST-prioritised order tracking across all kitchen nodes</span>
+                </div>
+                <div id="active-orders-list" class="orders-scroll-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- SECTION 5: Kitchen Cooking Stations Monitor -->
+        <section class="glass-card stations-section slide-up" style="animation-delay: 0.8s;">
+            <div class="card-header">
+                <h3>🍳 Kitchen Cooking Stations Monitor</h3>
+                <span class="card-subtitle">Multiprocessor station allocation tracking busy vs available capacity</span>
+            </div>
+            <div class="station-grid-container" id="station-grid">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- SECTION 6: Station Timeline Gantt Chart -->
+        <section class="glass-card gantt-section slide-up" style="animation-delay: 0.9s;">
+            <div class="card-header flex-between">
+                <div>
+                    <h3>⏱️ Station Execution Timeline (Gantt Chart)</h3>
+                    <span class="card-subtitle">Visual timeline of process execution across cooking stations</span>
+                </div>
+                <div class="gantt-algorithm-toggle">
+                    <span class="toggle-label">Algorithm View:</span>
+                    <button type="button" id="btn-gantt-fcfs" class="btn-toggle">FCFS</button>
+                    <button type="button" id="btn-gantt-sjf" class="btn-toggle">SJF</button>
+                    <button type="button" id="btn-gantt-priority" class="btn-toggle active">Priority</button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="gantt-canvas"></canvas>
+            </div>
+        </section>
+
+        <!-- SECTION 7: OS Scheduling Benchmark -->
+        <section class="glass-card os-benchmark-section slide-up" style="animation-delay: 1.0s;">
+            <div class="card-header">
+                <div class="heading-with-tag">
+                    <h3>🧠 OS CPU Scheduling Performance Benchmarks</h3>
+                    <span class="academic-tag">Educational Demo for Teacher / Viva</span>
+                </div>
+                <p class="section-explanation">
+                    <strong>Why are OS Scheduling Algorithms used here?</strong> In a Cloud Kitchen, food orders arrive like <em>CPU Processes</em>, 
+                    cooking stations act as <em>CPU Cores</em>, and food prep times represent <em>Burst Times</em>. 
+                    Traditional kitchens use <strong>First-Come-First-Served (FCFS)</strong>, which causes severe <em>Convoy Effects</em> 
+                    (short orders stuck behind long pizza orders). 
+                    Our system implements <strong>Shortest Job First (SJF)</strong> to minimize average wait time, and <strong>Priority Scheduling with Aging</strong> 
+                    (LST algorithm, +3 pts/min) to ensure urgent orders never miss deadlines without starvation.
+                </p>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="chart-box">
+                    <h4>Average Wait Time Comparison (Seconds)</h4>
+                    <div class="chart-wrapper">
+                        <canvas id="comparison-wait-chart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <h4>Average Turnaround Time Comparison (Seconds)</h4>
+                    <div class="chart-wrapper">
+                        <canvas id="comparison-turnaround-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-box full-width-chart">
+                <h4>Algorithm Order Throughput Over Time</h4>
+                <div class="chart-wrapper">
+                    <canvas id="throughput-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8: AI Model Registry & Performance -->
+        <section class="glass-card ai-model-section slide-up" style="animation-delay: 1.1s;">
+            <div class="card-header flex-between">
+                <div>
+                    <h3>🤖 AI Model Registry &amp; Adaptive Learning Pipeline</h3>
+                    <span class="card-subtitle">Gradient Boosting model trained on 1,800 historical orders — predicts real cooking durations</span>
+                </div>
+                <button class="btn-secondary" id="btn-retrain">🔁 Trigger Candidate Retrain</button>
+            </div>
+            
+            <div id="model-info-grid" class="model-info-grid">
+                <div class="model-metric-card">
+                    <div class="metric-label">Production Model</div>
+                    <div class="metric-value" id="model-version-display">v2.0-rf-prod</div>
+                    <div class="metric-sub">GradientBoostingRegressor</div>
+                </div>
+                <div class="model-metric-card">
+                    <div class="metric-label">Validation MAE</div>
+                    <div class="metric-value" id="model-mae-display">73.7 s</div>
+                    <div class="metric-sub">Mean Absolute Error (~1.2 min)</div>
+                </div>
+                <div class="model-metric-card">
+                    <div class="metric-label">R² Accuracy</div>
+                    <div class="metric-value" id="model-r2-display">0.9848</div>
+                    <div class="metric-sub">98.5% variance explained</div>
+                </div>
+                <div class="model-metric-card">
+                    <div class="metric-label">Training Dataset</div>
+                    <div class="metric-value">1,800</div>
+                    <div class="metric-sub">Validated operational orders</div>
+                </div>
+            </div>
+
+            <div class="feature-importance-section">
+                <h4>📊 Top Learned Feature Importances</h4>
+                <div id="feature-importance-bars" class="feature-bars">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div id="retrain-result" class="retrain-result" style="display:none;"></div>
+        </section>
+
+        <!-- SECTION 9: Kitchen Inventory Stock Control -->
+        <section class="glass-card inventory-section slide-up" style="animation-delay: 1.2s;">
+            <div class="card-header">
+                <h3>📦 Kitchen Inventory &amp; Ingredients Stock</h3>
+                <span class="card-subtitle">Automated stock deduction &amp; reorder level warning system</span>
+            </div>
+            <div class="table-scroll-wrapper">
+                <table id="inventory-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ingredient Name</th>
+                            <th>Stock Quantity</th>
+                            <th>Unit</th>
+                            <th>Reorder Level</th>
+                            <th>Stock Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- AI Chatbot Floating Widget -->
+    <div id="chatbot-widget" class="chatbot-widget">
+        <button id="chatbot-toggle" class="chatbot-toggle-btn" title="AI Kitchen Assistant">
+            <span id="chatbot-icon">🤖</span>
+        </button>
+        <div id="chatbot-panel" class="chatbot-panel" style="display:none;">
+            <div class="chatbot-header">
+                <div>
+                    <span>🧠 AI Kitchen Operations Assistant</span>
+                    <div class="chatbot-subtitle">Grounded answers from real backend records</div>
+                </div>
+                <button id="chatbot-close" class="chatbot-close">✕</button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages">
+                <div class="chat-bubble bot-bubble">
+                    👋 Hello! I'm your grounded AI assistant. Ask me about order status, kitchen selection rationale, model accuracy, or priority decisions. All answers come from real backend data.
+                </div>
+            </div>
+            <div class="chatbot-input-row">
+                <input type="text" id="chatbot-input" placeholder="Ask about your order, kitchen, or model..." />
+                <button id="chatbot-send" class="chatbot-send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/gantt.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script src="js/kitchens.js"></script>
+</body>
+</html>
